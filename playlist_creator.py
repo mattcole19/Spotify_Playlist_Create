@@ -4,6 +4,7 @@ import os
 import spotipy
 import spotipy.util as util
 import datetime
+import json
 
 
 '''Scrapes hotnewhiphop top 100 songs then creates and returns list of songs by artists I enjoy
@@ -92,22 +93,35 @@ parameters:
     sp - spotify session
     song - song list containing name and artist.  Ex: ["Gooey", "Glass Animals"]'''
 def spotifySearch(sp, song):
-    song_id = ''
+    tracks = []
+    title, wanted_artist = song[0], song[1]
+    query = '{} - {}'.format(title, wanted_artist)
+    search_query = sp.search(query, type='track')
+    for result in search_query['tracks']['items']:
+        tracks.append(result['external_urls'])
+    if not tracks:
+        return
+    track = tracks[0]
+    wanted_track = track['spotify']
+    link, song_id = wanted_track.split('https://open.spotify.com/track/')
     return song_id
 
-'''Returns list of ids in master_ids.csv'''
+'''Gathers and returns list of ids in master_ids'''
 def readFile():
     contents = ''
     with open('master_ids.txt') as file:
         ids = file.read()
         file.close()
-    contents = ids.split(' ')
+    contents = ids.split('\n')
     return contents
 
+'''Writes ids to master_ids file
+parameters:
+    id - song id to add'''
 def writeToFile(id):
     with open('master_ids.txt', 'a+') as file:
         file.write(id)
-        file.write(' ')
+        file.write('\n')
     return
 
 
@@ -117,14 +131,19 @@ parameters:
     id - song id for song to add
     playlist - monthly playlist name that song will be added to'''
 def addSong(sp, id, playlist):
+    playlist_id = '4p6VOeZCjgjH8zgxgDE5Xh'
+    track_uri = [id]
+    print(track_uri)
+    sp.user_playlist_add_tracks('ccmatt19', playlist_id, track_uri)
     return
 
 
 def main():
-    desired_artists = ['Drake']
+    desired_artists = ['Drake', 'Nav', 'Machine Gun Kelly', 'A$AP Rocky', 'NF', 'Post Malone', 'Chance The Rapper', 'J. Cole', 'Juice WRLD'
+                       'Kanye West', 'Kid Cudi', 'Kendrick Lamar', 'Lil Uzi Vert', 'Russ', 'Meek Mill']
     desired_songs = getTopSongs(desired_artists)
     songs = normalizeSongs(desired_songs)
-    song_ids = ['3','6', '7', '45', '3']
+    song_ids = []
     missing_ids = []
     token = getToken()
     session = spotipy.Spotify(auth=token)
@@ -135,28 +154,12 @@ def main():
     for song in desired_songs:
         song_id = spotifySearch(session, song)
         if song_id:
-            song_ids.append(id)
+            song_ids.append(song_id)
     master_file_contents = readFile()
     for song_id in song_ids:
         if song_id not in master_file_contents:
             addSong(session, song_id, desired_playlist)
             writeToFile(song_id)
-
-
-
-
-    ''''with open('master_ids.csv', 'r') as master_ids:
-        r = master_ids.read()
-        for song_id in song_ids:
-            if song_id not in r:
-                #add song
-                missing_ids.append(song_id)
-    with open('master_ids.csv', 'a') as master_ids:
-        writer = csv.writer(master_ids)
-        writer.writerows(missing_ids)
-        master_ids.close()'''
-
-
 
     print('\nProgram complete!')
 
