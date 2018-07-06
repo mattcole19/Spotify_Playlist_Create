@@ -95,6 +95,22 @@ def spotifySearch(sp, song):
     song_id = ''
     return song_id
 
+'''Returns list of ids in master_ids.csv'''
+def readFile():
+    contents = ''
+    with open('master_ids.txt') as file:
+        ids = file.read()
+        file.close()
+    contents = ids.split(' ')
+    return contents
+
+def writeToFile(id):
+    with open('master_ids.txt', 'a+') as file:
+        file.write(id)
+        file.write(' ')
+    return
+
+
 '''Adds song to the corresponding month's playlist.  Returns nothing
 parameters:
     sp - spotify session
@@ -108,8 +124,8 @@ def main():
     desired_artists = ['Drake']
     desired_songs = getTopSongs(desired_artists)
     songs = normalizeSongs(desired_songs)
-    song_ids = []
-    master_ids = [] #separate file containing all ids of songs added to playlists
+    song_ids = ['3','6', '7', '45', '3']
+    missing_ids = []
     token = getToken()
     session = spotipy.Spotify(auth=token)
     desired_playlist = determinePlaylist()
@@ -120,9 +136,28 @@ def main():
         song_id = spotifySearch(session, song)
         if song_id:
             song_ids.append(id)
+    master_file_contents = readFile()
     for song_id in song_ids:
-        if song_id not in master_ids:
+        if song_id not in master_file_contents:
             addSong(session, song_id, desired_playlist)
+            writeToFile(song_id)
+
+
+
+
+    ''''with open('master_ids.csv', 'r') as master_ids:
+        r = master_ids.read()
+        for song_id in song_ids:
+            if song_id not in r:
+                #add song
+                missing_ids.append(song_id)
+    with open('master_ids.csv', 'a') as master_ids:
+        writer = csv.writer(master_ids)
+        writer.writerows(missing_ids)
+        master_ids.close()'''
+
+
+
     print('\nProgram complete!')
 
 
