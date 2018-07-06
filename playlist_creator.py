@@ -3,6 +3,7 @@ import requests
 import os
 import spotipy
 import spotipy.util as util
+import datetime
 
 
 '''Scrapes hotnewhiphop top 100 songs then creates and returns list of songs by artists I enjoy
@@ -32,13 +33,17 @@ def normalizeSongs(songs):
             index = song_title.find('(')
             song_title = song_title[0: index-1]
         song[0] = song_title
-    print(songs, "\n")
+    print('Songs that I want: ')
+    print('--------------------')
+    for song in songs:
+        print('{} - {}'.format(song[0], song[1]))
+    print('--------------------\n')
     return songs
 
 '''Gathers and returns access token to my Spotify account '''
 def getToken():
     user = 'ccmatt19'
-    desired_scope = 'playlist-modify-private'
+    desired_scope = 'playlist-modify-private, playlist-read-private'
     id = os.environ.get('SPOT_CLIENT')
     secret = os.environ.get('SPOT_SECRET')
     uri = 'http://google.com/'
@@ -46,11 +51,41 @@ def getToken():
     access_token = util.prompt_for_user_token(username=user, scope=desired_scope, client_id=id, client_secret=secret,
                                        redirect_uri=uri)
     if access_token:
-        print('Token gathered successfully')
+        print('Token gathered successfully!\n')
         return access_token
     else:
-        print('Error obtaining token.')
+        print('ERROR obtaining token.')
         return
+
+'''Decides playlist name to add songs to based on month and year.  Returns string in year-month format (ex: 18Nov)'''
+def determinePlaylist():
+    date = datetime.datetime.now()
+    month = date.strftime('%b')
+    year = date.strftime('%y')
+    playlist_name = year + month
+    return playlist_name
+
+'''Searches to see if playlist exists in my Spotify library. Returns True if it does and False otherwise
+parameters:
+    sp - spotify session
+    playlist_name = playlist that is being searched for'''
+def playlistExists(sp, playlist_name):
+    my_playlists = sp.current_user_playlists()
+    for playlist in my_playlists['items']:
+        if playlist_name == playlist['name']:
+            return True
+    return False
+
+
+'''Creates Spotify playlist for current month
+parameters:
+    sp - spotify session
+    playlist_name - name of playlist to be created'''
+def createPlaylist(sp, playlist_name):
+    user = 'ccmatt19'
+    sp.user_playlist_create(user, playlist_name, public= False)
+    print('New playlist, {}, created'.format(playlist_name))
+    return
 
 '''Searches Spotify for song.  If the song is found, the function returns the song id. If the song is not found it returns False
 parameters:
@@ -74,11 +109,13 @@ def main():
     desired_songs = getTopSongs(desired_artists)
     songs = normalizeSongs(desired_songs)
     song_ids = []
-    master_ids = [] #needs to be separate file to avoid being overwritten
-    #create Spotify session
+    master_ids = [] #separate file containing all ids of songs added to playlists
     token = getToken()
     session = spotipy.Spotify(auth=token)
-    desired_playlist = '18July' #need function to create playlist / go to desired playlist each month
+    desired_playlist = determinePlaylist()
+    if not playlistExists(session, desired_playlist):
+        createPlaylist(session, desired_playlist)
+        print()
     for song in desired_songs:
         song_id = spotifySearch(session, song)
         if song_id:
