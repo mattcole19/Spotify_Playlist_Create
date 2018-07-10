@@ -134,7 +134,6 @@ def writeToFile(id):
         file.write('\n')
     return
 
-
 '''Adds song to the corresponding month's playlist.  Returns nothing
 parameters:
     sp - spotify session
@@ -179,17 +178,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-'''Pseudocode:
-scrape top 100 songs and add song to playlist if artist in desired artists
-create spotify session
-
-for song in desired song list:
-    search for song on spotify
-    if theres a match:
-        get song id and add to song_ids list
-
-for song in song_ids:
-    add song to playlist
-'''
