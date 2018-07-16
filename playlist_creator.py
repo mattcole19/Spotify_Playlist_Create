@@ -177,7 +177,7 @@ def main():
             addSong(session, username, song_id, playlistID)
             writeToFile(song_id)
 
-    print('\nPROGRAM COMPLETE!')
+    print('\nPROGRAM COMPLETE! ')
 
 
 if __name__ == '__main__':
