@@ -40,9 +40,10 @@ def normalizeSongs(songs):
     print('--------------------\n')
     return songs
 
-'''Gathers and returns access token to my Spotify account '''
-def getToken():
-    user = 'ccmatt19'
+'''Gathers and returns access token to my Spotify account
+ parameters:
+    user - username of account'''
+def getToken(user):
     desired_scope = 'playlist-modify-private, playlist-read-private'
     id = os.environ.get('SPOT_CLIENT')
     secret = os.environ.get('SPOT_SECRET')
@@ -79,9 +80,9 @@ def playlistExists(sp, playlist_name):
 '''Creates Spotify playlist for current month
 parameters:
     sp - spotify session
+    user = username of account
     playlist_name - name of playlist to be created'''
-def createPlaylist(sp, playlist_name):
-    user = 'ccmatt19'
+def createPlaylist(sp, user, playlist_name):
     sp.user_playlist_create(user, playlist_name, public= False)
     print('New playlist, {}, created'.format(playlist_name))
     return
@@ -89,9 +90,10 @@ def createPlaylist(sp, playlist_name):
 '''Obtains and returns desired playlist's id.
 parameters:
     sp - spotify session
+    user - username of account
     playlist_name - name of playlist to get id for'''
-def getPlaylistID(sp, playlist_name):
-    playlists = sp.user_playlists('ccmatt19')
+def getPlaylistID(sp, user, playlist_name):
+    playlists = sp.user_playlists(user)
     for playlist in playlists['items']:
         if playlist['name'] == playlist_name:
             id = playlist['id']
@@ -137,12 +139,13 @@ def writeToFile(id):
 '''Adds song to the corresponding month's playlist.  Returns nothing
 parameters:
     sp - spotify session
+    user - username of account
     id - song id for song to add
     playlist - monthly playlist name that song will be added to'''
-def addSong(sp, id, playListID):
+def addSong(sp, user, id, playListID):
     track_uri = [id]
     print(track_uri)
-    sp.user_playlist_add_tracks('ccmatt19', playListID, track_uri)
+    sp.user_playlist_add_tracks(user, playListID, track_uri)
     return
 
 
@@ -150,17 +153,18 @@ def main():
     desired_artists = ['Drake', 'Nav', 'Machine Gun Kelly', 'A$AP Rocky', 'NF', 'Post Malone', 'Chance The Rapper', 'J. Cole', 'Juice WRLD',
                        'Kanye West', 'Kid Cudi', 'Kendrick Lamar', 'Lil Uzi Vert', 'Russ', 'B.o.B', 'Lil Dicky', 'Chris Webby', 'Eminem',
                        'Travis Scott', 'Flatbush Zombies', 'Logic', 'Trippie Redd', 'Vic Mensa', 'Young Thug', 'Mac Miller']
+    username = 'ccmatt19'
     desired_songs = getTopSongs(desired_artists)
     songs = normalizeSongs(desired_songs)
     song_ids = []
     missing_ids = []
-    token = getToken()
+    token = getToken(username)
     session = spotipy.Spotify(auth=token)
     desired_playlist = determinePlaylist()
     if not playlistExists(session, desired_playlist):
-        createPlaylist(session, desired_playlist)
+        createPlaylist(session, username, desired_playlist)
         print()
-    playlistID = getPlaylistID(session, desired_playlist)
+    playlistID = getPlaylistID(session, username, desired_playlist)
     print('Songs not found on Spotify: ')
     print('---------------------------')
     for song in desired_songs:
@@ -170,7 +174,7 @@ def main():
     master_file_contents = readFile()
     for song_id in song_ids:
         if song_id not in master_file_contents:
-            addSong(session, song_id, playlistID)
+            addSong(session, username, song_id, playlistID)
             writeToFile(song_id)
 
     print('\nPROGRAM COMPLETE!')
