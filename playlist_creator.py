@@ -40,7 +40,7 @@ def normalizeSongs(songs):
     print('--------------------\n')
     return songs
 
-'''Gathers and returns access token to my Spotify account
+'''Gathers and returns access token to my personal Spotify account
  parameters:
     user - username of account'''
 def getToken(user):
@@ -118,10 +118,12 @@ def spotifySearch(sp, song):
     link, song_id = wanted_track.split('https://open.spotify.com/track/')
     return song_id
 
-'''Gathers and returns list of ids in master_ids'''
-def readFile():
+'''Gathers and returns list of ids in master_ids
+parameters:
+    path - path of file being read'''
+def readFile(path):
     contents = ''
-    with open('master_ids.txt') as file:
+    with open(path) as file:
         ids = file.read()
         file.close()
     contents = ids.split('\n')
@@ -129,9 +131,10 @@ def readFile():
 
 '''Writes ids to master_ids file
 parameters:
+    path - path of file to write to 
     id - song id to add'''
-def writeToFile(id):
-    with open('master_ids.txt', 'a+') as file:
+def writeToFile(path, id):
+    with open(path, 'a+') as file:
         file.write(id)
         file.write('\n')
     return
@@ -154,6 +157,7 @@ def main():
                        'Kanye West', 'Kid Cudi', 'Kendrick Lamar', 'Lil Uzi Vert', 'Russ', 'B.o.B', 'Lil Dicky', 'Chris Webby', 'Eminem',
                        'Travis Scott', 'Flatbush Zombies', 'Logic', 'Trippie Redd', 'Vic Mensa', 'Young Thug', 'Mac Miller']
     username = 'ccmatt19'
+    file_path = '/Users/mattcole/Desktop/Spotify_Playlist_Creator/master_ids.txt'
     desired_songs = getTopSongs(desired_artists)
     songs = normalizeSongs(desired_songs)
     song_ids = []
@@ -171,11 +175,11 @@ def main():
         song_id = spotifySearch(session, song)
         if song_id:
             song_ids.append(song_id)
-    master_file_contents = readFile()
+    master_file_contents = readFile(file_path)
     for song_id in song_ids:
         if song_id not in master_file_contents:
             addSong(session, username, song_id, playlistID)
-            writeToFile(song_id)
+            writeToFile(file_path, song_id)
 
     print('\nPROGRAM COMPLETE! ')
 
