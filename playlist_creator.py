@@ -48,7 +48,6 @@ def getToken(user):
     id = os.environ.get('SPOT_CLIENT')
     secret = os.environ.get('SPOT_SECRET')
     uri = 'http://google.com/'
-
     access_token = util.prompt_for_user_token(username=user, scope=desired_scope, client_id=id, client_secret=secret,
                                        redirect_uri=uri)
     if access_token:
@@ -151,24 +150,27 @@ def addSong(sp, user, id, playListID):
     sp.user_playlist_add_tracks(user, playListID, track_uri)
     return
 
-
+#main script
 def main():
     desired_artists = ['Drake', 'Nav', 'Machine Gun Kelly', 'A$AP Rocky', 'NF', 'Post Malone', 'Chance The Rapper', 'J. Cole', 'Juice WRLD',
                        'Kanye West', 'Kid Cudi', 'Kendrick Lamar', 'Lil Uzi Vert', 'Russ', 'B.o.B', 'Lil Dicky', 'Chris Webby', 'Eminem',
-                       'Travis Scott', 'Flatbush Zombies', 'Logic', 'Trippie Redd', 'Vic Mensa', 'Young Thug', 'Mac Miller']
-    username = 'ccmatt19'
+                       'Travis Scott', 'Flatbush Zombies', 'Logic', 'Trippie Redd', 'Vic Mensa', 'Young Thug', 'Mac Miller', 'Khalid']
+
+    #data pertaining to me personally
+    spotify_username = 'ccmatt19'
     file_path = '/Users/mattcole/Desktop/Spotify_Playlist_Creator/master_ids.txt'
+
     desired_songs = getTopSongs(desired_artists)
     songs = normalizeSongs(desired_songs)
     song_ids = []
     missing_ids = []
-    token = getToken(username)
+    token = getToken(spotify_username)
     session = spotipy.Spotify(auth=token)
     desired_playlist = determinePlaylist()
     if not playlistExists(session, desired_playlist):
-        createPlaylist(session, username, desired_playlist)
+        createPlaylist(session, spotify_username, desired_playlist)
         print()
-    playlistID = getPlaylistID(session, username, desired_playlist)
+    playlistID = getPlaylistID(session, spotify_username, desired_playlist)
     print('Songs not found on Spotify: ')
     print('---------------------------')
     for song in desired_songs:
@@ -178,7 +180,7 @@ def main():
     master_file_contents = readFile(file_path)
     for song_id in song_ids:
         if song_id not in master_file_contents:
-            addSong(session, username, song_id, playlistID)
+            addSong(session, spotify_username, song_id, playlistID)
             writeToFile(file_path, song_id)
 
     print('\nPROGRAM COMPLETE! ')
