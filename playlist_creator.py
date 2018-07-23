@@ -142,11 +142,12 @@ def writeToFile(path, id):
 parameters:
     sp - spotify session
     user - username of account
-    id - song id for song to add
+    song - list of song id and name
     playlist - monthly playlist name that song will be added to'''
-def addSong(sp, user, id, playListID):
-    track_uri = [id]
-    print(track_uri)
+def addSong(sp, user, song, playListID):
+    track_uri = [song[0]]
+    song_added = song[1]
+    print(f'{song_added[0]} - {song_added[1]}')
     sp.user_playlist_add_tracks(user, playListID, track_uri)
     return
 
@@ -154,7 +155,8 @@ def addSong(sp, user, id, playListID):
 def main():
     desired_artists = ['Drake', 'Nav', 'Machine Gun Kelly', 'A$AP Rocky', 'NF', 'Post Malone', 'Chance The Rapper', 'J. Cole', 'Juice WRLD',
                        'Kanye West', 'Kid Cudi', 'Kendrick Lamar', 'Lil Uzi Vert', 'Russ', 'B.o.B', 'Lil Dicky', 'Chris Webby', 'Eminem',
-                       'Travis Scott', 'Flatbush Zombies', 'Logic', 'Trippie Redd', 'Vic Mensa', 'Young Thug', 'Mac Miller', 'Khalid']
+                       'Travis Scott', 'Flatbush Zombies', 'Logic', 'Trippie Redd', 'Vic Mensa', 'Young Thug', 'Mac Miller', 'Khalid', 'Tyler, The Creator',
+                       'Wiz Khalifa']
 
     #data pertaining to me personally
     spotify_username = 'ccmatt19'
@@ -176,12 +178,14 @@ def main():
     for song in desired_songs:
         song_id = spotifySearch(session, song)
         if song_id:
-            song_ids.append(song_id)
+            song_ids.append([song_id, song])
+    print('---------------------------\n')
     master_file_contents = readFile(file_path)
-    for song_id in song_ids:
-        if song_id not in master_file_contents:
-            addSong(session, spotify_username, song_id, playlistID)
-            writeToFile(file_path, song_id)
+    print('Songs added: ')
+    for song in song_ids:
+        if song[0] not in master_file_contents:
+            addSong(session, spotify_username, song, playlistID)
+            writeToFile(file_path, song[0])
 
     print('\nPROGRAM COMPLETE! ')
 
